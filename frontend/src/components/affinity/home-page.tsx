@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import { t } from '@/lib/tokens';
 import type { AppPage } from './app-shell';
 
 type HomePageProps = {
@@ -46,16 +47,16 @@ export default function HomePage({ onNavigate }: HomePageProps) {
     <>
       <div className="space-y-6">
         {/* Compact post bar */}
-        <Card className="rounded-[32px] border-white/10 bg-white/5 text-slate-100">
+        <Card className={t.card}>
           <CardContent className="p-4">
             <button
               onClick={() => setWriteOpen(true)}
               className="flex w-full items-center gap-3 text-left"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-500/20 text-sm font-medium text-violet-300 ring-1 ring-violet-400/30">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-app-violet text-sm font-medium text-app-violet-fg ring-1 ring-app-violet-line">
                 Y
               </div>
-              <div className="flex-1 rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm text-slate-400 transition hover:bg-white/10">
+              <div className={cn('flex-1 rounded-full border border-app-line bg-app-surface-hover px-5 py-3 text-sm transition hover:bg-app-surface-hover', t.fgMuted)}>
                 Add another thought to sharpen your place in the space.
               </div>
             </button>
@@ -63,15 +64,15 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         </Card>
 
         {/* Semantic space map */}
-        <Card className="rounded-[32px] border-white/10 bg-white/5 text-slate-100">
+        <Card className={t.card}>
           <CardHeader>
-            <CardTitle>Semantic space</CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardTitle className={t.fg}>Semantic space</CardTitle>
+            <CardDescription className={t.fgMuted}>
               A 2D view of where you sit
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="relative h-[400px] overflow-hidden rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_center,#1e1b4b,transparent_25%),#020617]">
+            <div className="relative h-[400px] overflow-hidden rounded-[28px] border border-app-line bg-[radial-gradient(circle_at_center,#1e1b4b,transparent_25%),#020617]">
               {dots.map((dot) => (
                 <motion.div
                   key={dot.id}
@@ -114,13 +115,11 @@ export default function HomePage({ onNavigate }: HomePageProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            {/* Backdrop */}
             <motion.div
-              className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm"
+              className={t.modalBackdrop}
               onClick={() => setWriteOpen(false)}
             />
 
-            {/* Modal card */}
             <motion.div
               className="relative z-10 w-full max-w-2xl"
               initial={{ opacity: 0, y: -20 }}
@@ -128,17 +127,17 @@ export default function HomePage({ onNavigate }: HomePageProps) {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
             >
-              <Card className="rounded-[32px] border-white/10 bg-slate-900 text-slate-100 shadow-2xl">
+              <Card className={t.cardModal}>
                 <CardHeader className="flex flex-row items-start justify-between pb-2">
                   <div>
-                    <CardTitle className="text-2xl">Write</CardTitle>
-                    <CardDescription className="text-slate-400">
+                    <CardTitle className={cn('text-2xl', t.fg)}>Write</CardTitle>
+                    <CardDescription className={t.fgMuted}>
                       A quiet place to publish a raw thought.
                     </CardDescription>
                   </div>
                   <button
                     onClick={() => setWriteOpen(false)}
-                    className="rounded-xl p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
+                    className={cn('rounded-xl p-2 transition hover:bg-app-surface-hover', t.fgMuted)}
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -146,7 +145,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
 
                 <CardContent className="space-y-6">
                   <Tabs value={mode} onValueChange={setMode}>
-                    <TabsList className="rounded-2xl bg-white/5">
+                    <TabsList className={t.tabList}>
                       <TabsTrigger value="prompted" className="rounded-xl">
                         Prompted
                       </TabsTrigger>
@@ -158,21 +157,23 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                       </TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="prompted" className="mt-6 space-y-4">
-                      <div className="rounded-3xl border border-violet-400/20 bg-violet-500/10 p-5">
-                        <div className="mb-2 text-sm text-violet-200">Prompt</div>
-                        <div className="text-lg">{prompt}</div>
+                    <TabsContent value="prompted" className="mt-6">
+                      <div className={cn('p-5', t.accentCard)}>
+                        <div className={cn('mb-2 text-sm', 'text-app-violet-fg')}>
+                          Prompt
+                        </div>
+                        <div className={cn('text-lg', t.fg)}>{prompt}</div>
                       </div>
                     </TabsContent>
 
                     <TabsContent value="free" className="mt-6">
-                      <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-slate-300">
+                      <div className={cn('p-5', t.innerLg, t.fgSoft)}>
                         Write anything that feels true right now.
                       </div>
                     </TabsContent>
 
                     <TabsContent value="short" className="mt-6">
-                      <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-slate-300">
+                      <div className={cn('p-5', t.innerLg, t.fgSoft)}>
                         One sharp thought is enough.
                       </div>
                     </TabsContent>
@@ -181,10 +182,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                   <div className="flex flex-wrap gap-2">
                     {['Belief', 'Doubt', 'Memory', 'Question', 'Contradiction', 'Change'].map(
                       (chip) => (
-                        <Badge
-                          key={chip}
-                          className="rounded-full bg-white/10 px-3 py-1 text-slate-200 hover:bg-white/10"
-                        >
+                        <Badge key={chip} className={t.badge}>
                           {chip}
                         </Badge>
                       )
@@ -195,15 +193,16 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     placeholder="Start with the sentence you would least likely post anywhere else."
-                    className="min-h-[200px] rounded-[28px] border-white/10 bg-white/5 p-5 text-base leading-7 text-slate-100 placeholder:text-slate-500"
+                    className={cn(
+                      'min-h-[200px] rounded-[28px] p-5 text-base leading-7',
+                      t.input
+                    )}
                   />
 
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <Badge className="rounded-full bg-emerald-500/15 text-emerald-200 hover:bg-emerald-500/15">
-                        Public
-                      </Badge>
-                      <span className="text-sm text-slate-400">
+                      <Badge className={t.badgeOk}>Public</Badge>
+                      <span className={cn('text-sm', t.fgMuted)}>
                         Visible in the shared space
                       </span>
                     </div>
@@ -211,13 +210,13 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                       <Button
                         variant="outline"
                         onClick={() => setWriteOpen(false)}
-                        className="rounded-2xl border-white/15 bg-white/5 text-slate-100 hover:bg-white/10"
+                        className={t.btnOutline}
                       >
                         Save draft
                       </Button>
                       <Button
                         onClick={() => setWriteOpen(false)}
-                        className="rounded-2xl bg-white text-slate-950 hover:bg-slate-200"
+                        className={t.btnPrimary}
                       >
                         Publish thought
                       </Button>

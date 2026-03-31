@@ -46,6 +46,31 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ── App semantic tokens ── */
+  --color-app-canvas: var(--app-canvas);
+  --color-app-surface: var(--app-surface);
+  --color-app-surface-hover: var(--app-surface-hover);
+  --color-app-surface-solid: var(--app-surface-solid);
+  --color-app-fg: var(--app-fg);
+  --color-app-fg-soft: var(--app-fg-soft);
+  --color-app-fg-muted: var(--app-fg-muted);
+  --color-app-fg-dim: var(--app-fg-dim);
+  --color-app-line: var(--app-line);
+  --color-app-line-soft: var(--app-line-soft);
+  --color-app-violet: var(--app-violet);
+  --color-app-violet-fg: var(--app-violet-fg);
+  --color-app-violet-line: var(--app-violet-line);
+  --color-app-violet-wash: var(--app-violet-wash);
+  --color-app-nav-pill: var(--app-nav-pill);
+  --color-app-nav-pill-fg: var(--app-nav-pill-fg);
+  --color-app-action: var(--app-action);
+  --color-app-action-fg: var(--app-action-fg);
+  --color-app-action-hover: var(--app-action-hover);
+  --color-app-scrim: var(--app-scrim);
+  --color-app-overlay: var(--app-overlay);
+  --color-app-ok: var(--app-ok);
+  --color-app-ok-fg: var(--app-ok-fg);
 }
 
 :root {
@@ -81,6 +106,34 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* ── App light tokens ── */
+  --app-canvas:        oklch(0.984 0.003 247.858);       /* slate-50  */
+  --app-surface:       oklch(1 0 0);                      /* white     */
+  --app-surface-hover: oklch(0.968 0.007 247.896);        /* slate-100 */
+  --app-surface-solid: oklch(1 0 0);                      /* white     */
+  --app-fg:            oklch(0.208 0.042 264.695);        /* slate-900 */
+  --app-fg-soft:       oklch(0.446 0.043 257.281);        /* slate-600 */
+  --app-fg-muted:      oklch(0.554 0.046 257.417);        /* slate-500 */
+  --app-fg-dim:        oklch(0.704 0.04 256.788);         /* slate-400 */
+  --app-line:          oklch(0.929 0.013 255.508);        /* slate-200 */
+  --app-line-soft:     oklch(0.869 0.022 252.894);        /* slate-300 */
+  --app-violet:        oklch(0.943 0.029 294.588);        /* violet-100 */
+  --app-violet-fg:     oklch(0.491 0.27 292.581);         /* violet-700 */
+  --app-violet-line:   oklch(0.702 0.183 293.541 / 40%); /* violet-400/40 */
+  --app-violet-wash:   oklch(0.969 0.016 293.756);        /* violet-50 */
+  --app-nav-pill:      oklch(0.208 0.042 264.695);        /* slate-900 */
+  --app-nav-pill-fg:   oklch(1 0 0);                      /* white     */
+  --app-action:        oklch(0.208 0.042 264.695);        /* slate-900 */
+  --app-action-fg:     oklch(1 0 0);                      /* white     */
+  --app-action-hover:  oklch(0.279 0.041 260.031);        /* slate-800 */
+  --app-scrim:         oklch(0.208 0.042 264.695 / 60%); /* slate-900/60 */
+  --app-overlay:       oklch(0.208 0.042 264.695 / 70%); /* slate-900/70 */
+  --app-ok:            oklch(0.696 0.17 162.48 / 15%);   /* emerald-500/15 */
+  --app-ok-fg:         oklch(0.432 0.095 166.913);        /* emerald-800 */
+  --landing-gradient:  radial-gradient(circle at top, #ede9fe, transparent 30%),
+                       radial-gradient(circle at bottom right, #ccfbf1, transparent 25%),
+                       #f8fafc;
 }
 
 .dark {
@@ -115,6 +168,38 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* ── App dark tokens ── */
+  --app-canvas:        oklch(0.129 0.042 264.695);        /* slate-950 */
+  --app-surface:       oklch(1 0 0 / 5%);                 /* white/5   */
+  --app-surface-hover: oklch(1 0 0 / 10%);                /* white/10  */
+  --app-surface-solid: oklch(0.168 0.028 264);            /* slate-900 */
+  --app-fg:            oklch(0.968 0.007 247.896);        /* slate-100 */
+  --app-fg-soft:       oklch(0.869 0.022 252.894);        /* slate-300 */
+  --app-fg-muted:      oklch(0.704 0.04 256.788);         /* slate-400 */
+  --app-fg-dim:        oklch(0.554 0.046 257.417);        /* slate-500 */
+  --app-line:          oklch(1 0 0 / 10%);                /* white/10  */
+  --app-line-soft:     oklch(1 0 0 / 15%);                /* white/15  */
+  --app-violet:        oklch(0.606 0.25 292.717 / 20%);  /* violet-500/20 */
+  --app-violet-fg:     oklch(0.811 0.111 293.571);        /* violet-300 */
+  --app-violet-line:   oklch(0.702 0.183 293.541 / 20%); /* violet-400/20 */
+  --app-violet-wash:   oklch(0.606 0.25 292.717 / 10%);  /* violet-500/10 */
+  --app-nav-pill:      oklch(1 0 0);                      /* white     */
+  --app-nav-pill-fg:   oklch(0.129 0.042 264.695);        /* slate-950 */
+  --app-action:        oklch(1 0 0);                      /* white     */
+  --app-action-fg:     oklch(0.129 0.042 264.695);        /* slate-950 */
+  --app-action-hover:  oklch(0.929 0.013 255.508);        /* slate-200 */
+  --app-scrim:         oklch(0.129 0.042 264.695 / 80%); /* slate-950/80 */
+  --app-overlay:       oklch(0.129 0.042 264.695 / 70%); /* slate-950/70 */
+  --app-ok:            oklch(0.696 0.17 162.48 / 15%);   /* emerald-500/15 */
+  --app-ok-fg:         oklch(0.905 0.093 164.15);         /* emerald-200 */
+  --landing-gradient:  radial-gradient(circle at top, #312e81, transparent 30%),
+                       radial-gradient(circle at bottom right, #0f766e, transparent 25%),
+                       #020617;
+}
+
+.landing-bg {
+  background: var(--landing-gradient);
 }
 
 @layer base {

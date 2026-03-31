@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { t } from '@/lib/tokens';
 
 type PlacementProps = {
   onContinue: () => void;
@@ -12,40 +13,35 @@ type PlacementProps = {
 
 export default function Placement({ onContinue }: PlacementProps) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-slate-100">
-      <Card className="w-full max-w-4xl overflow-hidden rounded-[32px] border-white/10 bg-white/5">
+    <div className={cn('flex items-center justify-center px-6', t.page)}>
+      <Card className={cn('w-full max-w-4xl overflow-hidden', t.card)}>
         <CardContent className="grid gap-0 p-0 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="flex flex-col justify-center p-8 lg:p-10">
-            <Badge className="mb-4 w-fit rounded-full bg-violet-500/20 text-violet-200 hover:bg-violet-500/20">
+            <Badge className={cn('mb-4 w-fit', t.badgeAccent)}>
               Initial placement complete
             </Badge>
 
-            <h2 className="text-4xl font-semibold tracking-tight">
-              You’ve entered the space.
+            <h2 className={cn('text-4xl font-semibold tracking-tight', t.fg)}>
+              You've entered the space.
             </h2>
 
-            <p className="mt-4 max-w-md text-slate-300">
+            <p className={cn('mt-4 max-w-md', t.fgSoft)}>
               Your first thoughts have given us an initial sense of where you
               belong. Your position will keep evolving as you write.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button
-                onClick={onContinue}
-                className="rounded-2xl bg-white text-slate-950 hover:bg-slate-200"
-              >
+              <Button onClick={onContinue} className={t.btnPrimary}>
                 Explore nearby minds
               </Button>
-              <Button
-                variant="outline"
-                className="rounded-2xl border-white/15 bg-white/5 text-slate-100 hover:bg-white/10"
-              >
+              <Button variant="outline" className={t.btnOutline}>
                 View profile
               </Button>
             </div>
           </div>
 
-          <div className="relative min-h-[420px] border-t border-white/10 bg-[radial-gradient(circle_at_center,#1e1b4b,transparent_25%),#020617] lg:border-l lg:border-t-0">
+          {/* The semantic space visualization stays dark regardless of theme */}
+          <div className="relative min-h-[420px] border-t border-app-line bg-[radial-gradient(circle_at_center,#1e1b4b,transparent_25%),#020617] lg:border-l lg:border-t-0">
             {[...Array(30)].map((_, i) => {
               const left = `${6 + ((i * 13) % 85)}%`;
               const top = `${10 + ((i * 19) % 75)}%`;
@@ -81,7 +77,7 @@ export default function Placement({ onContinue }: PlacementProps) {
               );
             })}
 
-            <div className="absolute bottom-5 left-5 rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-slate-200 backdrop-blur">
+            <div className={cn('absolute bottom-5 left-5 px-4 py-3 text-sm text-white', t.overlayLabel)}>
               Your dot is now visible.
             </div>
           </div>
