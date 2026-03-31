@@ -6,7 +6,6 @@ import {
   Home,
   PenSquare,
   Compass,
-  Map,
   User,
   Settings
 } from 'lucide-react';
@@ -19,7 +18,6 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { nearbyUsers } from './data';
 
 export type AppPage =
   | 'home'
@@ -44,7 +42,6 @@ export default function AppShell({
     { id: 'home', label: 'Home', icon: Home },
     { id: 'write', label: 'Write', icon: PenSquare },
     { id: 'discover', label: 'Discover', icon: Compass },
-    { id: 'map', label: 'Map', icon: Map },
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'settings', label: 'Settings', icon: Settings }
   ] as const;
@@ -92,29 +89,33 @@ export default function AppShell({
         <aside className="hidden w-80 shrink-0 space-y-4 xl:block">
           <Card className="rounded-3xl border-white/10 bg-white/5 text-slate-100">
             <CardHeader>
-              <CardTitle className="text-base">Nearby minds</CardTitle>
+              <CardTitle className="text-base">Selected profile</CardTitle>
               <CardDescription className="text-slate-400">
-                People currently close to your writing
+                Why this dot is near you
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {nearbyUsers.map((u) => (
-                <div
-                  key={u.id}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-3"
-                >
-                  <div className="mb-1 flex items-center justify-between">
-                    <div className="font-medium">{u.name}</div>
-                    <Badge
-                      variant="secondary"
-                      className="bg-white/10 text-slate-200"
-                    >
-                      {u.closeness}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-slate-300">{u.excerpt}</p>
-                </div>
-              ))}
+            <CardContent className="space-y-4">
+              <div>
+                <div className="font-medium">Mira</div>
+                <div className="mt-1 text-sm text-slate-400">Very near</div>
+              </div>
+              <p className="text-sm text-slate-300">
+                You appear close because both of you write often about identity,
+                uncertainty, and emotional honesty.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {['identity', 'uncertainty', 'honesty'].map((tag) => (
+                  <Badge
+                    key={tag}
+                    className="rounded-full bg-violet-500/15 text-violet-200 hover:bg-violet-500/15"
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+              <button className="w-full rounded-2xl bg-white px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-slate-200">
+                View full profile
+              </button>
             </CardContent>
           </Card>
 

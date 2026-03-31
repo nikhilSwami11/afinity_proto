@@ -6,7 +6,6 @@ import AppShell, { type AppPage } from './app-shell';
 import DiscoverPage from './discover-page';
 import HomePage from './home-page';
 import Landing from './landing';
-import MapPage from './map-page';
 import Onboarding from './onboarding';
 import Placement from './placement';
 import ProfilePage from './profile-page';
@@ -72,7 +71,6 @@ export default function PrototypeApp() {
               {appPage === 'home' && <HomePage onNavigate={setAppPage} />}
               {appPage === 'write' && <WritePage />}
               {appPage === 'discover' && <DiscoverPage />}
-              {appPage === 'map' && <MapPage />}
               {appPage === 'profile' && <ProfilePage />}
               {appPage === 'settings' && <SettingsPage />}
             </AppShell>
