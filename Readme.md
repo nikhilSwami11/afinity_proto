@@ -1,83 +1,182 @@
-# Affinity
+# Affinity Proto
 
-> A living map of minds. Publish your thoughts. Find your tribe.
+**A living map of minds**
 
-## What Is Affinity?
+A prototype for publishing thoughts, discovering aligned people, and exploring connection through ideas.
 
-Affinity is a space where people publish their raw thoughts, ideas, and 
-beliefs — not as social media posts optimised for likes, but as honest 
-expressions of how they see the world.
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs\&logoColor=white)
+![React](https://img.shields.io/badge/React-19-20232A?logo=react\&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript\&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss\&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi\&logoColor=white)
+![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-ORM-D71F00?logo=sqlalchemy\&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql\&logoColor=white)
+![Alembic](https://img.shields.io/badge/Alembic-Migrations-222222)
 
-Every person becomes a dot in a 3D space. The position of your dot is 
-determined by the semantic similarity of your published thoughts to 
-everyone else's. People who think like you are near you. People who 
-see the world differently are far away.
+## Overview
 
-You don't fill out a profile. You don't pick your interests from a 
-dropdown. You just write — and the space figures out where you belong.
+Affinity is a full-stack prototype built around a simple idea: people should be discoverable through what they think, not just through profile metadata. The repository currently includes a modern frontend prototype, a feature-structured FastAPI backend, PostgreSQL-backed persistence, and an ML workspace for future embedding and placement logic.
 
----
+## Tech Stack
 
-## The Core Problem
+### Frontend
 
-Most social platforms optimise for engagement — likes, follows, 
-virality. They reward performance, not honesty.
+* Next.js 16
 
-There is no good tool for answering the question:
-**"Where do I stand in the landscape of human thought — and who 
-is standing near me?"**
+* React 19
 
-Affinity is an attempt to answer that question.
+* TypeScript 5
 
----
+* Tailwind CSS 4
 
-## How It Works
+* Radix UI
 
-### Writing
-Users write private notes and journal entries freely. The app is 
-a thinking space first — nothing is public by default.
+* Motion
 
-### Extraction
-After writing, the AI reads your notes and surfaces 2-3 sentences 
-that felt most like *you* — concentrated expressions of how you think.
+* Lucide React
 
-### Publishing
-You choose which extracted quotes to publish. Your published quotes 
-are your public identity in the space. Not your job title, not your 
-follower count — just your words.
+### Backend
 
-### Placement
-Published quotes are embedded using a language model. Your position 
-in the 3D pool is computed from the semantic similarity of your 
-published thoughts to everyone else's. Similar thinkers cluster 
-together naturally — no manual categorisation needed.
+* Python 3
 
-### Discovery
-Explore the pool. Hover a dot to see someone's name. Click to read 
-their published thoughts. Find people whose words stop you mid-scroll.
+* FastAPI
 
----
+* SQLAlchemy 2
 
-## Visual Language
+* Alembic
 
-Each dot in the pool has a **domain color** representing the broad 
-world the person comes from:
+* Psycopg 3
 
-| Color | Domain | Who |
-|-------|--------|-----|
-| Purple | Thinker | Philosophy, psychology, spirituality |
-| Teal | Builder | Engineering, design, product |
-| Amber | Creator | Music, art, writing, film |
-| Coral | Connector | Community, empathy, social |
-| Blue | Explorer | Science, research, curiosity |
+* Pydantic Settings
 
-At normal zoom you see colored glowing dots — a constellation of minds.
-As you zoom in, dots reveal profile pictures. Hover for a name. 
-Click for their published thoughts.
+* Uvicorn
 
----
+### Data and Tooling
 
-## What Makes Someone's Position Change?
+* PostgreSQL
 
-Every time a user publishes a new quote, their embedding updates 
-using a running weighted average — r
+* npm
+
+* Python `venv`
+
+* ESLint
+
+## Repository Structure
+
+```text
+Afinity_Proto/
+├── backend/
+│   ├── app/
+│   │   ├── core/
+│   │   ├── db/
+│   │   ├── features/
+│   │   │   ├── auth/
+│   │   │   ├── users/
+│   │   │   ├── thoughts/
+│   │   │   ├── profiles/
+│   │   │   ├── embeddings/
+│   │   │   ├── matching/
+│   │   │   ├── discover/
+│   │   │   └── map/
+│   │   ├── shared/
+│   │   └── main.py
+│   ├── alembic/
+│   ├── alembic.ini
+│   ├── docker-compose.yml
+│   └── requirements.txt
+├── frontend/
+│   ├── src/app/
+│   ├── src/components/
+│   └── package.json
+└── ml/
+```
+
+## Features
+
+* Thought-first product direction focused on expression, discovery, and alignment
+
+* Next.js prototype with landing, onboarding, home, write, discover, placement, profile, and settings flows
+
+* FastAPI backend organized by feature modules for future scale
+
+* Alembic migrations and SQLAlchemy models for PostgreSQL persistence
+
+* Dedicated `ml/` directory for embeddings, similarity, and placement experimentation
+
+## Getting Started
+
+### Prerequisites
+
+* Node.js and npm
+
+* Python 3
+
+* PostgreSQL
+
+### Frontend Setup
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Backend Setup
+
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install fastapi uvicorn sqlalchemy alembic 'psycopg[binary]' pydantic-settings
+```
+
+### Database Setup
+
+Create a PostgreSQL database, then set the connection string in `backend/alembic.ini`.
+
+Example:
+
+```ini
+sqlalchemy.url = postgresql+psycopg://postgres:password@localhost:5432/afinity
+```
+
+Run migrations:
+
+```bash
+cd backend
+source .venv/bin/activate
+alembic upgrade head
+```
+
+Generate a new migration after model changes:
+
+```bash
+alembic revision --autogenerate -m "describe your change"
+alembic upgrade head
+```
+
+### Run The Backend
+
+```bash
+cd backend
+source .venv/bin/activate
+uvicorn app.main:app --reload
+```
+
+## Current Status
+
+* The frontend is currently the most complete part of the product experience.
+
+* The backend has the new feature-based structure in place and includes the thoughts flow scaffold.
+
+* The ML scripts are placeholders and are ready for future implementation.
+
+## Next Improvements
+
+* Move backend dependencies into `backend/requirements.txt`
+
+* Fill out `backend/docker-compose.yml` for PostgreSQL and app services
+
+* Add environment-based configuration for database credentials
+
+* Expand auth, profiles, matching, and discover feature implementations
