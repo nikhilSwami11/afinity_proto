@@ -16,7 +16,7 @@ type Screen = 'landing' | 'onboarding' | 'placement' | 'app';
 type Answers = Record<string, string>;
 
 export default function PrototypeApp() {
-  const [screen, setScreen] = useState<Screen>('landing');
+  const [screen, setScreen] = useState<Screen>('app');
   const [appPage, setAppPage] = useState<AppPage>('home');
   const [answers, setAnswers] = useState<Answers>({});
 

@@ -112,7 +112,7 @@ export default function AppShell({
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="mb-20 min-w-0 flex-1 md:mb-0">{children}</main>
 
         <aside className="hidden w-80 shrink-0 space-y-4 xl:block">
           <Card className={t.cardMd}>
@@ -177,6 +177,27 @@ export default function AppShell({
           </Card>
         </aside>
       </div>
+
+      {/* Mobile bottom nav */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 flex border-t border-app-line bg-app-bg md:hidden">
+        {nav.map((item) => {
+          const Icon = item.icon;
+          const active = current === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setCurrent(item.id)}
+              className={cn(
+                'flex flex-1 flex-col items-center gap-1 py-3 text-xs transition',
+                active ? t.navActive : t.navInactive
+              )}
+            >
+              <Icon className="h-5 w-5" />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { createThought } from '@/lib/api/thoughts';
 import { X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,7 +32,25 @@ export default function HomePage({ onNavigate }: HomePageProps) {
   const [writeOpen, setWriteOpen] = useState(false);
   const [mode, setMode] = useState('prompted');
   const [text, setText] = useState('');
+  const [loading, setLoading] = useState(false);
   const prompt = 'What are you willing to sacrifice for, and what are you not?';
+
+  async function handleSubmit(status: 'draft' | 'published', visibility: 'public' | 'private') {
+    if (!text.trim()) return;
+    setLoading(true);
+    try {
+      await createThought({
+        content: text,
+        status,
+        visibility,
+        prompt_source: mode === 'prompted' ? prompt : undefined,
+      });
+      setText('');
+      setWriteOpen(false);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const dots = useMemo(() => {
     return [...Array(36)].map((_, i) => ({
@@ -209,16 +228,18 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                     <div className="flex gap-3">
                       <Button
                         variant="outline"
-                        onClick={() => setWriteOpen(false)}
                         className={t.btnOutline}
+                        disabled={loading || !text.trim()}
+                        onClick={() => handleSubmit('draft', 'private')}
                       >
                         Save draft
                       </Button>
                       <Button
-                        onClick={() => setWriteOpen(false)}
                         className={t.btnPrimary}
+                        disabled={loading || !text.trim()}
+                        onClick={() => handleSubmit('published', 'public')}
                       >
-                        Publish thought
+                        {loading ? 'Publishing…' : 'Publish thought'}
                       </Button>
                     </div>
                   </div>
