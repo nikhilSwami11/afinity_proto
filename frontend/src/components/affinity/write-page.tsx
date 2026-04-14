@@ -1,142 +1,88 @@
 'use client';
 
-import { useState } from 'react';
-import { createThought } from '@/lib/api/thoughts';
-import { Badge } from '@/components/ui/badge';
+import { useState, useEffect } from 'react';
+import { PenSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger
-} from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { t } from '@/lib/tokens';
+import { listMyThoughts } from '@/lib/api/thoughts';
+import type { ThoughtResponse } from '@/types/thought';
+import ThoughtCard from './thought-card';
+import WriteModal from './write-modal';
 
 export default function WritePage() {
-  const [mode, setMode] = useState('prompted');
-  const [text, setText] = useState('');
-  const [loading, setLoading] = useState(false);
-  const prompt = 'What are you willing to sacrifice for, and what are you not?';
+  const [writeOpen, setWriteOpen] = useState(false);
+  const [editThought, setEditThought] = useState<ThoughtResponse | undefined>();
+  const [thoughts, setThoughts] = useState<ThoughtResponse[]>([]);
 
-  async function handleSubmit(status: 'draft' | 'published', visibility: 'public' | 'private') {
-    if (!text.trim()) return;
-    setLoading(true);
+  async function fetchThoughts() {
     try {
-      await createThought({
-        content: text,
-        status,
-        visibility,
-        prompt_source: mode === 'prompted' ? prompt : undefined,
-      });
-      setText('');
-    } finally {
-      setLoading(false);
+      const data = await listMyThoughts();
+      setThoughts(data);
+    } catch {
+      // silently fail for now
     }
   }
 
+  useEffect(() => {
+    fetchThoughts();
+  }, []);
+
   return (
-    <div className="space-y-6">
-      <Card className={t.card}>
-        <CardHeader>
-          <CardTitle className={cn('text-3xl', t.fg)}>Write</CardTitle>
-          <CardDescription className={t.fgMuted}>
-            A quiet place to publish a raw thought.
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          <Tabs value={mode} onValueChange={setMode}>
-            <TabsList className={t.tabList}>
-              <TabsTrigger value="prompted" className="rounded-xl">
-                Prompted
-              </TabsTrigger>
-              <TabsTrigger value="free" className="rounded-xl">
-                Free write
-              </TabsTrigger>
-              <TabsTrigger value="short" className="rounded-xl">
-                Short thought
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="prompted" className="mt-6 space-y-4">
-              <div className={cn('p-5', t.accentCard)}>
-                <div className={cn('mb-2 text-sm', 'text-app-violet-fg')}>
-                  Prompt
+    <>
+      <div className="space-y-6">
+        {/* Compact post bar — only show when there are thoughts */}
+        {thoughts.length > 0 && (
+          <Card className={t.card}>
+            <CardContent className="p-4">
+              <button
+                onClick={() => setWriteOpen(true)}
+                className="flex w-full items-center gap-3 text-left"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-app-violet text-sm font-medium text-app-violet-fg ring-1 ring-app-violet-line">
+                  Y
                 </div>
-                <div className={cn('text-lg', t.fg)}>{prompt}</div>
-              </div>
-            </TabsContent>
+                <div className={cn('flex-1 rounded-full border border-app-line bg-app-surface-hover px-5 py-3 text-sm transition hover:bg-app-surface-hover', t.fgMuted)}>
+                  What's on your mind?
+                </div>
+              </button>
+            </CardContent>
+          </Card>
+        )}
 
-            <TabsContent value="free" className="mt-6">
-              <div className={cn('p-5', t.innerLg, t.fgSoft)}>
-                Write anything that feels true right now.
-              </div>
-            </TabsContent>
-
-            <TabsContent value="short" className="mt-6">
-              <div className={cn('p-5', t.innerLg, t.fgSoft)}>
-                One sharp thought is enough.
-              </div>
-            </TabsContent>
-          </Tabs>
-
-          <div className="flex flex-wrap gap-2">
-            {['Belief', 'Doubt', 'Memory', 'Question', 'Contradiction', 'Change'].map(
-              (chip) => (
-                <Badge key={chip} className={t.badge}>
-                  {chip}
-                </Badge>
-              )
-            )}
+        {/* Thoughts list */}
+        {thoughts.length > 0 ? (
+          <div className="space-y-2">
+            {thoughts.map((thought) => (
+              <ThoughtCard
+                key={thought.id}
+                thought={thought}
+                onEdit={(t) => { setEditThought(t); setWriteOpen(true); }}
+                onDelete={(id) => setThoughts((prev) => prev.filter((t) => t.id !== id))}
+              />
+            ))}
           </div>
-
-          <Textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Start with the sentence you would least likely post anywhere else."
-            className={cn(
-              'min-h-[320px] rounded-[28px] p-5 text-base leading-7',
-              t.input
-            )}
-          />
-
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Badge className={t.badgeOk}>Public</Badge>
-              <span className={cn('text-sm', t.fgMuted)}>
-                Visible in the shared space
-              </span>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                className={t.btnOutline}
-                disabled={loading || !text.trim()}
-                onClick={() => handleSubmit('draft', 'private')}
-              >
-                Save draft
-              </Button>
-              <Button
-                className={t.btnPrimary}
-                disabled={loading || !text.trim()}
-                onClick={() => handleSubmit('published', 'public')}
-              >
-                {loading ? 'Publishing…' : 'Publish thought'}
-              </Button>
-            </div>
+        ) : (
+          <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
+            <PenSquare className={cn('h-10 w-10', t.fgMuted)} />
+            <p className={cn('text-lg font-medium', t.fg)}>No thoughts yet</p>
+            <p className={cn('text-sm', t.fgMuted)}>
+              Publish your first thought to see it here.
+            </p>
+            <Button className={cn(t.btnPrimary, 'w-48')} onClick={() => setWriteOpen(true)}>
+              Write
+            </Button>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        )}
+      </div>
+
+      <WriteModal
+        open={writeOpen}
+        onClose={() => { setWriteOpen(false); setEditThought(undefined); }}
+        onSuccess={fetchThoughts}
+        editThought={editThought}
+      />
+    </>
   );
 }
