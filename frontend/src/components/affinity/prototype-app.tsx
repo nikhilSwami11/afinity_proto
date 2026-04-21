@@ -11,16 +11,47 @@ import Placement from './placement';
 import ProfilePage from './profile-page';
 import SettingsPage from './settings-page';
 import WritePage from './write-page';
+import { RightPanelProvider } from '@/lib/right-panel-context';
 
 type Screen = 'landing' | 'onboarding' | 'placement' | 'app';
 type Answers = Record<string, string>;
 
+export type UserPosition = { x: number; y: number } | null;
+
+async function fetchPosition(answers: Answers): Promise<UserPosition> {
+  const texts = Object.values(answers).filter((v) => v.trim().length > 0);
+  if (texts.length === 0) return null;
+  try {
+    const res = await fetch('http://localhost:8000/api/v1/map/position', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ onboarding_answers: texts }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return { x: data.x, y: data.y };
+  } catch {
+    return null;
+  }
+}
+
 export default function PrototypeApp() {
-  const [screen, setScreen] = useState<Screen>('app');
+  const [screen, setScreen] = useState<Screen>('landing');
   const [appPage, setAppPage] = useState<AppPage>('home');
   const [answers, setAnswers] = useState<Answers>({});
+  const [userPosition, setUserPosition] = useState<UserPosition>(null);
+  const [isPositioning, setIsPositioning] = useState(false);
+
+  async function handleFinishOnboarding() {
+    setScreen('placement');
+    setIsPositioning(true);
+    const pos = await fetchPosition(answers);
+    setUserPosition(pos);
+    setIsPositioning(false);
+  }
 
   return (
+    <RightPanelProvider>
     <div className="min-h-screen bg-slate-950">
       <AnimatePresence mode="wait">
         {screen === 'landing' && (
@@ -44,7 +75,7 @@ export default function PrototypeApp() {
             <Onboarding
               answers={answers}
               setAnswers={setAnswers}
-              onFinish={() => setScreen('placement')}
+              onFinish={handleFinishOnboarding}
             />
           </motion.div>
         )}
@@ -56,7 +87,13 @@ export default function PrototypeApp() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <Placement onContinue={() => setScreen('app')} />
+            <Placement
+              onContinue={() => {
+                setScreen('app');
+                setAppPage('home');
+              }}
+              isLoading={isPositioning}
+            />
           </motion.div>
         )}
 
@@ -68,7 +105,9 @@ export default function PrototypeApp() {
             exit={{ opacity: 0 }}
           >
             <AppShell current={appPage} setCurrent={setAppPage}>
-              {appPage === 'home' && <HomePage onNavigate={setAppPage} />}
+              {appPage === 'home' && (
+                <HomePage onNavigate={setAppPage} userPosition={userPosition} />
+              )}
               {appPage === 'write' && <WritePage />}
               {appPage === 'discover' && <DiscoverPage />}
               {appPage === 'profile' && <ProfilePage />}
@@ -78,5 +117,6 @@ export default function PrototypeApp() {
         )}
       </AnimatePresence>
     </div>
+    </RightPanelProvider>
   );
 }

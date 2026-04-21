@@ -3,9 +3,9 @@
 import type { ReactNode } from 'react';
 import {
   Sparkles,
-  Home,
   PenSquare,
   Compass,
+  Globe,
   User,
   Settings,
   Sun,
@@ -22,6 +22,7 @@ import {
 import { cn } from '@/lib/utils';
 import { t } from '@/lib/tokens';
 import { useTheme } from '@/lib/theme-context';
+import { useRightPanel } from '@/lib/right-panel-context';
 
 export type AppPage =
   | 'home'
@@ -43,9 +44,10 @@ export default function AppShell({
   children
 }: AppShellProps) {
   const { theme, toggle } = useTheme();
+  const { rightPanel } = useRightPanel();
 
   const nav = [
-    { id: 'home', label: 'Home', icon: Home },
+    { id: 'home', label: 'Map', icon: Globe },
     { id: 'write', label: 'Write', icon: PenSquare },
     { id: 'discover', label: 'Discover', icon: Compass },
     { id: 'profile', label: 'Profile', icon: User },
@@ -115,66 +117,60 @@ export default function AppShell({
         <main className="mb-20 min-w-0 flex-1 md:mb-0">{children}</main>
 
         <aside className="hidden w-80 shrink-0 space-y-4 xl:block">
-          <Card className={t.cardMd}>
-            <CardHeader>
-              <CardTitle className={cn('text-base', t.fg)}>
-                Selected profile
-              </CardTitle>
-              <CardDescription className={t.fgMuted}>
-                Why this dot is near you
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <div className={cn('font-medium', t.fg)}>Mira</div>
-                <div className={cn('mt-1 text-sm', t.fgMuted)}>Very near</div>
-              </div>
-              <p className={cn('text-sm', t.fgSoft)}>
-                You appear close because both of you write often about identity,
-                uncertainty, and emotional honesty.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {['identity', 'uncertainty', 'honesty'].map((tag) => (
-                  <Badge key={tag} className={t.badgeAccent}>
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-              <button
-                className={cn(
-                  'w-full px-4 py-2 text-sm font-medium transition',
-                  t.btnPrimary
-                )}
-              >
-                View full profile
-              </button>
-            </CardContent>
-          </Card>
+          {rightPanel ?? (
+            <>
+              <Card className={t.cardMd}>
+                <CardHeader>
+                  <CardTitle className={cn('text-base', t.fg)}>
+                    Selected profile
+                  </CardTitle>
+                  <CardDescription className={t.fgMuted}>
+                    Why this dot is near you
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <div className={cn('font-medium', t.fg)}>Mira</div>
+                    <div className={cn('mt-1 text-sm', t.fgMuted)}>Very near</div>
+                  </div>
+                  <p className={cn('text-sm', t.fgSoft)}>
+                    You appear close because both of you write often about identity,
+                    uncertainty, and emotional honesty.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {['identity', 'uncertainty', 'honesty'].map((tag) => (
+                      <Badge key={tag} className={t.badgeAccent}>
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                  <button className={cn('w-full px-4 py-2 text-sm font-medium transition', t.btnPrimary)}>
+                    View full profile
+                  </button>
+                </CardContent>
+              </Card>
 
-          <Card className={t.cardMd}>
-            <CardHeader>
-              <CardTitle className={cn('text-base', t.fg)}>
-                Your current signal
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex flex-wrap gap-2">
-                {[
-                  'reflective',
-                  'values-driven',
-                  'ambiguity-friendly',
-                  'emotionally precise'
-                ].map((tag) => (
-                  <Badge key={tag} className={t.badgeAccent}>
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-              <p className={cn('text-sm', t.fgMuted)}>
-                Your position will keep evolving as you publish more thoughts.
-              </p>
-            </CardContent>
-          </Card>
+              <Card className={t.cardMd}>
+                <CardHeader>
+                  <CardTitle className={cn('text-base', t.fg)}>
+                    Your current signal
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    {['reflective', 'values-driven', 'ambiguity-friendly', 'emotionally precise'].map((tag) => (
+                      <Badge key={tag} className={t.badgeAccent}>
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className={cn('text-sm', t.fgMuted)}>
+                    Your position will keep evolving as you publish more thoughts.
+                  </p>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </aside>
       </div>
 

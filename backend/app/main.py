@@ -1,10 +1,24 @@
 """FastAPI application entrypoint."""
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sentence_transformers import SentenceTransformer
 
+from app.features.map.routes import router as map_router
 from app.features.thoughts.routes import router as thoughts_router
 
-app = FastAPI(title="Affinity Backend")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load the embedding model once at startup — not per request
+    print("Loading embedding model...")
+    app.state.embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+    print("Embedding model ready.")
+    yield
+
+
+app = FastAPI(title="Affinity Backend", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -14,6 +28,7 @@ app.add_middleware(
 )
 
 app.include_router(thoughts_router)
+app.include_router(map_router, prefix="/api/v1")
 
 
 @app.get("/")

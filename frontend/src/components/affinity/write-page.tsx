@@ -15,13 +15,16 @@ export default function WritePage() {
   const [writeOpen, setWriteOpen] = useState(false);
   const [editThought, setEditThought] = useState<ThoughtResponse | undefined>();
   const [thoughts, setThoughts] = useState<ThoughtResponse[]>([]);
+  const [loading, setLoading] = useState(true);
 
   async function fetchThoughts() {
     try {
-      const data = await listMyThoughts();
+const data = await listMyThoughts();
       setThoughts(data);
     } catch {
       // silently fail for now
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -52,7 +55,17 @@ export default function WritePage() {
         )}
 
         {/* Thoughts list */}
-        {thoughts.length > 0 ? (
+        {loading ? (
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div
+                key={i}
+                className={cn('h-24 animate-pulse rounded-[28px]', t.inner)}
+                style={{ opacity: 1 - i * 0.2 }}
+              />
+            ))}
+          </div>
+        ) : thoughts.length > 0 ? (
           <div className="space-y-2">
             {thoughts.map((thought) => (
               <ThoughtCard

@@ -9,9 +9,10 @@ import { t } from '@/lib/tokens';
 
 type PlacementProps = {
   onContinue: () => void;
+  isLoading?: boolean;
 };
 
-export default function Placement({ onContinue }: PlacementProps) {
+export default function Placement({ onContinue, isLoading = false }: PlacementProps) {
   return (
     <div className={cn('flex items-center justify-center px-6', t.page)}>
       <Card className={cn('w-full max-w-4xl overflow-hidden', t.card)}>
@@ -31,8 +32,8 @@ export default function Placement({ onContinue }: PlacementProps) {
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button onClick={onContinue} className={t.btnPrimary}>
-                Explore nearby minds
+              <Button onClick={onContinue} disabled={isLoading} className={t.btnPrimary}>
+                {isLoading ? 'Mapping your mind…' : 'Explore nearby minds'}
               </Button>
               <Button variant="outline" className={t.btnOutline}>
                 View profile
