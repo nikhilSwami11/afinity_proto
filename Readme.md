@@ -80,6 +80,8 @@ Afinity_Proto/
 │   │   │   └── map/
 │   │   ├── shared/
 │   │   └── main.py
+│   ├── scripts/
+│   │   └── seed_map.py
 │   ├── alembic/
 │   ├── alembic.ini
 │   ├── docker-compose.yml
@@ -162,6 +164,37 @@ cd backend
 source .venv/bin/activate
 uvicorn app.main:app --reload
 ```
+
+### Seeding the Map
+
+`backend/scripts/seed_map.py` populates the database with 35 fake users across 7 philosophical "thought camps" (introspection, systems, belonging, doubt, memory, ambition, language). Each user is embedded via a sentence-transformer model, reduced to 2D coordinates with UMAP, and written to a `seed_users` table in Postgres.
+
+**Install the extra dependencies:**
+
+```bash
+cd backend
+source .venv/bin/activate
+pip install sentence-transformers umap-learn numpy matplotlib
+```
+
+> The first run downloads the `all-MiniLM-L6-v2` model (~90 MB) — an internet connection is required.
+
+**Run the script:**
+
+```bash
+cd backend
+source .venv/bin/activate
+python -m scripts.seed_map
+```
+
+The script will:
+
+1. Embed all 35 users using their seed thoughts
+2. Run UMAP to produce a 2D layout
+3. Open a matplotlib cluster plot so you can validate the groups visually
+4. Prompt for confirmation before writing to Postgres
+
+If the plot shows at least 3 distinct clusters, enter `y` to commit. The `seed_users` table is dropped and recreated on each run, so re-running with modified seed data is safe.
 
 ## Current Status
 
