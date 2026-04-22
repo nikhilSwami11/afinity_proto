@@ -7,15 +7,33 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { t } from '@/lib/tokens';
 import { listMyThoughts } from '@/lib/api/thoughts';
+import { useRightPanel } from '@/lib/right-panel-context';
 import type { ThoughtResponse } from '@/types/thought';
+import type { UserPosition } from './prototype-app';
 import ThoughtCard from './thought-card';
 import WriteModal from './write-modal';
+import { NearbyMindsPanel, SelectedUserPanel, type SeedUser } from './nearby-minds-panel';
 
-export default function WritePage() {
+const API = 'http://localhost:8000/api/v1';
+
+function euclidean(ax: number, ay: number, bx: number, by: number) {
+  return Math.sqrt((ax - bx) ** 2 + (ay - by) ** 2);
+}
+
+type WritePageProps = {
+  onPositionUpdate?: (pos: { x: number; y: number }) => void;
+  userPosition?: UserPosition;
+};
+
+export default function WritePage({ onPositionUpdate, userPosition }: WritePageProps) {
   const [writeOpen, setWriteOpen] = useState(false);
   const [editThought, setEditThought] = useState<ThoughtResponse | undefined>();
   const [thoughts, setThoughts] = useState<ThoughtResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [seeds, setSeeds] = useState<SeedUser[]>([]);
+  const [seedsLoading, setSeedsLoading] = useState(true);
+  const [selected, setSelected] = useState<SeedUser | null>(null);
+  const { setRightPanel } = useRightPanel();
 
   async function fetchThoughts() {
     try {
@@ -30,6 +48,45 @@ const data = await listMyThoughts();
 
   useEffect(() => {
     fetchThoughts();
+    fetch(`${API}/map/users`)
+      .then((r) => r.json())
+      .then((data) => { setSeeds(data); setSeedsLoading(false); })
+      .catch(() => setSeedsLoading(false));
+  }, []);
+
+  const nearestIds = new Set<number>();
+  if (userPosition && seeds.length > 0) {
+    [...seeds]
+      .sort((a, b) =>
+        euclidean(userPosition.x, userPosition.y, a.map_x, a.map_y) -
+        euclidean(userPosition.x, userPosition.y, b.map_x, b.map_y)
+      )
+      .slice(0, 3)
+      .forEach((s) => nearestIds.add(s.id));
+  }
+
+  const panelUsers = seeds.filter((s) => nearestIds.has(s.id)).length > 0
+    ? seeds.filter((s) => nearestIds.has(s.id))
+    : seeds.slice(0, 3);
+
+  useEffect(() => {
+    if (selected) {
+      setRightPanel(
+        <SelectedUserPanel
+          user={selected}
+          isNearest={nearestIds.has(selected.id)}
+          onClose={() => setSelected(null)}
+        />
+      );
+    } else {
+      setRightPanel(<NearbyMindsPanel users={panelUsers} loading={seedsLoading} onSelect={setSelected} />);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, seeds, seedsLoading, userPosition, setRightPanel]);
+
+  useEffect(() => {
+    return () => setRightPanel(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -94,6 +151,7 @@ const data = await listMyThoughts();
         open={writeOpen}
         onClose={() => { setWriteOpen(false); setEditThought(undefined); }}
         onSuccess={fetchThoughts}
+        onPositionUpdate={onPositionUpdate}
         editThought={editThought}
       />
     </>

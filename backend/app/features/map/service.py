@@ -1,10 +1,11 @@
 """Map service layer."""
 import json
-import math
 
 import numpy as np
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+
+from app.features.thoughts.models import Thought
 
 
 def _cosine_sim(a: list[float], b: list[float]) -> float:
@@ -23,16 +24,10 @@ def get_all_seed_users(db: Session) -> list[dict]:
 
 
 def compute_position(db: Session, model, answers: list[str]) -> dict:
-    """
-    Embed the user's onboarding answers, find K=3 nearest seed users by
-    cosine similarity, return the weighted centroid position clamped to [0.1, 0.9].
-    """
-    # Embed answers and take the mean vector
     non_empty = [a.strip() for a in answers if a.strip()]
     embeddings = model.encode(non_empty, normalize_embeddings=True)
     user_vec = embeddings.mean(axis=0).tolist()
 
-    # Load seed users with embeddings
     rows = db.execute(
         text("SELECT id, name, embedding, map_x, map_y FROM seed_users")
     ).fetchall()
@@ -40,30 +35,43 @@ def compute_position(db: Session, model, answers: list[str]) -> dict:
     if not rows:
         return {"x": 0.5, "y": 0.5, "low_signal": True}
 
-    # Compute cosine similarity for each seed user
     scored = []
     for row in rows:
         seed_embedding = json.loads(row.embedding) if isinstance(row.embedding, str) else row.embedding
         sim = _cosine_sim(user_vec, seed_embedding)
         scored.append((sim, row.map_x, row.map_y))
 
-    # Sort by similarity descending, take top K=3
     scored.sort(key=lambda t: t[0], reverse=True)
     top_k = scored[:3]
-
-    # Check if signal is weak (all similarities below threshold)
     low_signal = top_k[0][0] < 0.3
 
-    # Weighted centroid
     total_weight = sum(s for s, _, _ in top_k)
     if total_weight == 0:
         return {"x": 0.5, "y": 0.5, "low_signal": True}
 
     x = sum(s * px for s, px, _ in top_k) / total_weight
     y = sum(s * py for s, _, py in top_k) / total_weight
-
-    # Clamp to inner bounding box so the dot never lands at the canvas edge
     x = max(0.1, min(0.9, x))
     y = max(0.1, min(0.9, y))
 
     return {"x": x, "y": y, "low_signal": low_signal}
+
+
+def recalculate_position_from_thoughts(db: Session, model, user_id: int) -> dict | None:
+    thoughts = (
+        db.query(Thought)
+        .filter(Thought.user_id == user_id, Thought.status == "published")
+        .all()
+    )
+    if not thoughts:
+        return None
+
+    texts = [t.content for t in thoughts]
+    result = compute_position(db, model, texts)
+
+    db.execute(
+        text("UPDATE users SET map_x = :x, map_y = :y WHERE id = :id"),
+        {"x": result["x"], "y": result["y"], "id": user_id},
+    )
+    db.commit()
+    return result

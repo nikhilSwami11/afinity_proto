@@ -5,7 +5,7 @@ import { useState } from 'react';
 import AppShell, { type AppPage } from './app-shell';
 import DiscoverPage from './discover-page';
 import HomePage from './home-page';
-import Landing from './landing';
+import Landing, { type AuthResult } from './landing';
 import Onboarding from './onboarding';
 import Placement from './placement';
 import ProfilePage from './profile-page';
@@ -18,11 +18,13 @@ type Answers = Record<string, string>;
 
 export type UserPosition = { x: number; y: number } | null;
 
+const API = 'http://localhost:8000/api/v1';
+
 async function fetchPosition(answers: Answers): Promise<UserPosition> {
   const texts = Object.values(answers).filter((v) => v.trim().length > 0);
   if (texts.length === 0) return null;
   try {
-    const res = await fetch('http://localhost:8000/api/v1/map/position', {
+    const res = await fetch(`${API}/map/position`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ onboarding_answers: texts }),
@@ -35,18 +37,63 @@ async function fetchPosition(answers: Answers): Promise<UserPosition> {
   }
 }
 
+async function savePosition(token: string, pos: UserPosition): Promise<void> {
+  if (!pos) return;
+  try {
+    await fetch(`${API}/users/me/position`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ x: pos.x, y: pos.y }),
+    });
+  } catch {
+    // non-fatal
+  }
+}
+
+async function loadPosition(token: string): Promise<UserPosition> {
+  try {
+    const res = await fetch(`${API}/users/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.map_x == null || data.map_y == null) return null;
+    return { x: data.map_x, y: data.map_y };
+  } catch {
+    return null;
+  }
+}
+
 export default function PrototypeApp() {
   const [screen, setScreen] = useState<Screen>('landing');
   const [appPage, setAppPage] = useState<AppPage>('home');
   const [answers, setAnswers] = useState<Answers>({});
   const [userPosition, setUserPosition] = useState<UserPosition>(null);
   const [isPositioning, setIsPositioning] = useState(false);
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: number; username: string } | null>(null);
+
+  async function handleAuth(result: AuthResult, isNewUser: boolean) {
+    setAuthToken(result.token);
+    setCurrentUser({ id: result.userId, username: result.username });
+    if (isNewUser) {
+      setScreen('onboarding');
+    } else {
+      const pos = await loadPosition(result.token);
+      setUserPosition(pos);
+      setScreen('app');
+      setAppPage('home');
+    }
+  }
 
   async function handleFinishOnboarding() {
     setScreen('placement');
     setIsPositioning(true);
     const pos = await fetchPosition(answers);
     setUserPosition(pos);
+    if (pos && authToken) {
+      await savePosition(authToken, pos);
+    }
     setIsPositioning(false);
   }
 
@@ -61,7 +108,7 @@ export default function PrototypeApp() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <Landing onStart={() => setScreen('onboarding')} />
+            <Landing onAuth={handleAuth} />
           </motion.div>
         )}
 
@@ -108,7 +155,12 @@ export default function PrototypeApp() {
               {appPage === 'home' && (
                 <HomePage onNavigate={setAppPage} userPosition={userPosition} />
               )}
-              {appPage === 'write' && <WritePage />}
+              {appPage === 'write' && (
+                <WritePage
+                  userPosition={userPosition}
+                  onPositionUpdate={(pos) => setUserPosition(pos)}
+                />
+              )}
               {appPage === 'discover' && <DiscoverPage />}
               {appPage === 'profile' && <ProfilePage />}
               {appPage === 'settings' && <SettingsPage />}

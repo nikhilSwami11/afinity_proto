@@ -1,6 +1,7 @@
 from logging.config import fileConfig
 from app.db.base import Base
-from app.features.thoughts.models import Thought
+from app.features.thoughts.models import Thought  # noqa: F401
+from app.features.users.models import User  # noqa: F401
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool

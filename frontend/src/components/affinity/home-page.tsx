@@ -4,23 +4,14 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'; // still used by post bar panel
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { t } from '@/lib/tokens';
 import { useRightPanel } from '@/lib/right-panel-context';
 import type { AppPage } from './app-shell';
 import type { UserPosition } from './prototype-app';
 import WriteModal from './write-modal';
-
-type SeedUser = {
-  id: number;
-  name: string;
-  excerpt: string;
-  themes: string[];
-  camp: string;
-  map_x: number;
-  map_y: number;
-};
+import { NearbyMindsPanel, SelectedUserPanel, type SeedUser } from './nearby-minds-panel';
 
 type HoverState = {
   user: SeedUser;
@@ -39,97 +30,12 @@ function euclidean(ax: number, ay: number, bx: number, by: number) {
   return Math.sqrt((ax - bx) ** 2 + (ay - by) ** 2);
 }
 
-// ── Right panel content components ──────────────────────────────────────────
-
-function NearbyMindsPanel({
-  users,
-  onSelect,
-}: {
-  users: SeedUser[];
-  onSelect: (u: SeedUser) => void;
-}) {
-  if (users.length === 0) return null;
-  return (
-    <Card className={t.cardMd}>
-      <CardHeader>
-        <CardTitle className={cn('text-base', t.fg)}>Nearby minds</CardTitle>
-        <CardDescription className={t.fgMuted}>
-          The 3 people closest to where you landed.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {users.map((user) => (
-          <div
-            key={user.id}
-            className={cn('cursor-pointer rounded-2xl p-3 transition', t.inner, 'hover:bg-app-surface')}
-            onClick={() => onSelect(user)}
-          >
-            <div className="flex items-center justify-between">
-              <span className={cn('text-sm font-medium', t.fg)}>{user.name}</span>
-              <div className="flex gap-1">
-                {user.themes.slice(0, 2).map((theme) => (
-                  <Badge key={theme} className={cn('px-1.5 py-0 text-[10px]', t.badgeAccent)}>
-                    {theme}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-            <p className={cn('mt-1 text-xs italic leading-relaxed', t.fgMuted)}>
-              "{user.excerpt}"
-            </p>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-  );
-}
-
-function SelectedUserPanel({
-  user,
-  isNearest,
-  onClose,
-}: {
-  user: SeedUser;
-  isNearest: boolean;
-  onClose: () => void;
-}) {
-  return (
-    <Card className={t.cardMd}>
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className={cn('text-base', t.fg)}>{user.name}</CardTitle>
-            <CardDescription className={t.fgMuted}>
-              {isNearest ? 'Very near · similar themes' : 'In the space'}
-            </CardDescription>
-          </div>
-          <button
-            onClick={onClose}
-            className={cn('text-sm transition', t.fgMuted, 'hover:text-app-fg')}
-          >
-            close
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-1.5 pt-1">
-          {user.themes.map((theme) => (
-            <Badge key={theme} className={t.badgeAccent}>{theme}</Badge>
-          ))}
-        </div>
-      </CardHeader>
-      <CardContent>
-        <p className={cn('text-sm italic leading-relaxed', t.fgSoft)}>
-          "{user.excerpt}"
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
-
 // ── Main component ───────────────────────────────────────────────────────────
 
 export default function HomePage({ userPosition }: HomePageProps) {
   const [writeOpen, setWriteOpen] = useState(false);
   const [seeds, setSeeds] = useState<SeedUser[]>([]);
+  const [seedsLoading, setSeedsLoading] = useState(true);
   const [selected, setSelected] = useState<SeedUser | null>(null);
   const [hovered, setHovered] = useState<HoverState>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -139,8 +45,8 @@ export default function HomePage({ userPosition }: HomePageProps) {
   useEffect(() => {
     fetch(`${API}/map/users`)
       .then((r) => r.json())
-      .then(setSeeds)
-      .catch(() => {});
+      .then((data) => { setSeeds(data); setSeedsLoading(false); })
+      .catch(() => setSeedsLoading(false));
   }, []);
 
   // K=3 nearest to user position
@@ -160,9 +66,7 @@ export default function HomePage({ userPosition }: HomePageProps) {
   // Fall back to first 3 seeds when no position yet
   const panelUsers = nearbyUsers.length > 0 ? nearbyUsers : seeds.slice(0, 3);
 
-  // Sync right panel whenever selection or seeds change
   useEffect(() => {
-    if (seeds.length === 0) return;
     if (selected) {
       setRightPanel(
         <SelectedUserPanel
@@ -173,12 +77,11 @@ export default function HomePage({ userPosition }: HomePageProps) {
       );
     } else {
       setRightPanel(
-        <NearbyMindsPanel users={panelUsers} onSelect={setSelected} />
+        <NearbyMindsPanel users={panelUsers} loading={seedsLoading} onSelect={setSelected} />
       );
     }
-  // setRightPanel is stable (useCallback), nearestIds/panelUsers derive from seeds+userPosition
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, seeds, userPosition, setRightPanel]);
+  }, [selected, seeds, seedsLoading, userPosition, setRightPanel]);
 
   // Reset to fallback on unmount so other pages see the default hardcoded panel
   useEffect(() => {

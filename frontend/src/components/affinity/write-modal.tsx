@@ -20,25 +20,27 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { t } from '@/lib/tokens';
-import { createThought, updateThought } from '@/lib/api/thoughts';
+import { createThought, updateThought, recalculatePosition } from '@/lib/api/thoughts';
 import type { ThoughtResponse } from '@/types/thought';
 
 type WriteModalProps = {
   open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  onPositionUpdate?: (pos: { x: number; y: number }) => void;
   editThought?: ThoughtResponse;
 };
 
 const PROMPT = 'What are you willing to sacrifice for, and what are you not?';
 
-export default function WriteModal({ open, onClose, onSuccess, editThought }: WriteModalProps) {
+export default function WriteModal({ open, onClose, onSuccess, onPositionUpdate, editThought }: WriteModalProps) {
   const isEditing = !!editThought;
   const [mode, setMode] = useState(() =>
     editThought?.prompt_source ? 'prompted' : 'free'
   );
   const [text, setText] = useState(editThought?.content ?? '');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setText(editThought?.content ?? '');
@@ -48,6 +50,7 @@ export default function WriteModal({ open, onClose, onSuccess, editThought }: Wr
   async function handleSubmit(status: 'draft' | 'published', visibility: 'public' | 'private') {
     if (!text.trim()) return;
     setLoading(true);
+    setError(null);
     try {
       if (isEditing) {
         await updateThought(editThought.id, { content: text, status, visibility });
@@ -62,6 +65,11 @@ export default function WriteModal({ open, onClose, onSuccess, editThought }: Wr
       setText('');
       onClose();
       onSuccess?.();
+      if (status === 'published' && onPositionUpdate) {
+        recalculatePosition().then(onPositionUpdate).catch(() => {});
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong.');
     } finally {
       setLoading(false);
     }
@@ -123,6 +131,10 @@ export default function WriteModal({ open, onClose, onSuccess, editThought }: Wr
                   placeholder="Start with the sentence you would least likely post anywhere else."
                   className={cn('min-h-[200px] rounded-[28px] p-5 !text-lg leading-8', t.input)}
                 />
+
+                {error && (
+                  <p className="text-sm text-red-400">{error}</p>
+                )}
 
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <span className={cn('text-sm', t.fgMuted)}>{text.length} / 5000</span>

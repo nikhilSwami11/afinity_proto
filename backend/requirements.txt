@@ -4,6 +4,11 @@ psycopg[binary]
 pydantic-settings
 alembic
 sqlalchemy
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==4.0.1
+email-validator
+requests
 
 # ML / map feature
 sentence-transformers==3.4.1
